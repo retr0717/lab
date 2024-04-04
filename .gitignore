@@ -1,2 +1,5 @@
 memory_allocation
 priority_preemption
+round_robin
+sjs
+fcfs_preemptive
