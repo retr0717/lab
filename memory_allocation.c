@@ -1,142 +1,161 @@
 #include <stdio.h>
-#include <limits.h>
 
-#define MAX_PARTITIONS 100
-
-struct MemoryPartition{
-    int size;
-    int allocated;
-};
-
-void firstFit(struct MemoryPartition memory[], int num_partitions, int process_size) {
-    // Iterate through memory partitions
-    for (int i = 0; i < num_partitions; i++) {
-        // Check if partition is free and has enough space
-        if (memory[i].allocated == 0 && memory[i].size >= process_size) {
-            // Allocate the process to this partition
-            memory[i].allocated = 1;
-            printf("Process allocated to partition %d using First Fit\n", i);
-            return; // Exit loop after allocation
-        }
+void FirstFit(int bsize[], int psize[], int bno, int pno, int flags[], int allocation[])
+{
+    // initial setup
+    for (int i = 0; i < 10; i++)
+    {
+        flags[i] = 0;
+        allocation[i] = -1;
     }
-    // If no suitable partition is found, create a new one
-    printf("No suitable partition found\n");
-    return;
-    // Create new partition
-    // memory[num_partitions].size = process_size;
-    // memory[num_partitions].allocated = 1;
-    // printf("Process allocated to new partition %d using First Fit\n", num_partitions);
-}
 
-void bestFit(struct MemoryPartition memory[], int num_partitions, int process_size) {
-    int best_partition = -1;
-    int min_size = INT_MAX;
+    // logic
+    for (int i = 0; i < pno; i++)
+    {
+        for (int j = 0; j < bno; j++)
+        {
+            if (bsize[j] >= psize[i])
+            {
+                // allocate block psize[i] to block j.
+                allocation[i] = j;
 
-    // Find the smallest suitable partition
-    for (int i = 0; i < num_partitions; i++) {
-        if (memory[i].allocated == 0 && memory[i].size >= process_size && memory[i].size < min_size) {
-            best_partition = i;
-            min_size = memory[i].size;
+                // reduce the block size if there is any left.
+                bsize[j] -= psize[i];
+                break;
+            }
         }
     }
 
-    if (best_partition != -1) {
-        // Allocate the process to the best partition
-        memory[best_partition].allocated = 1;
-        printf("Process allocated to partition %d using Best Fit\n", best_partition);
-    } else {
-        // If no suitable partition is found, create a new one
-        printf("No suitable partition found, creating a new one using Best Fit\n");
-        // Create new partition
-        memory[num_partitions].size = process_size;
-        memory[num_partitions].allocated = 1;
-        printf("Process allocated to new partition %d using Best Fit\n", num_partitions);
+    // display
+    printf("\nProcess No\tProcess Size\tBlock No\tFree Space");
+    printf("\n-----------------------------------------------\n");
+
+    for (int i = 0; i < pno; i++)
+    {
+        printf("\n%d\t\t%d\t\t", i + 1, psize[i]);
+        if (allocation[i] != -1)
+            printf("%d\t\t", allocation[i] + 1);
+        else
+            printf("Not allocated\t");
+
+        printf("%d\n", bsize[i]);
     }
 }
 
-void worstFit(struct MemoryPartition memory[], int num_partitions, int process_size) {
-    int worst_partition = -1;
-    int max_size = 0;
+void BestFit(int bsize[], int psize[], int bno, int pno)
+{
+    int lowest = 9999, temp;
+    int barray[20]= {0}, parray[20] = {0}, fragment[20];
 
-    // Find the largest suitable partition
-    for (int i = 0; i < num_partitions; i++) {
-        if (memory[i].allocated == 0 && memory[i].size >= process_size && memory[i].size > max_size) {
-            worst_partition = i;
-            max_size = memory[i].size;
+    for (int i = 0; i < pno; i++)
+    {
+        for (int j = 0; j < bno; j++)
+        {
+            if(barray[j] != 1)
+            {
+                temp = bsize[j] - psize[i];
+                if (temp >= 0)
+                {
+                    if(temp<lowest)
+                    {
+                        parray[i] = j;
+                        lowest = temp;
+                    }
+                }
+            }
+        }
+
+        fragment[i] = lowest;
+        barray[parray[i]] = 1;
+        lowest=10000;
+    }
+
+    printf("\nProcess No\tProcess Size\tBlock size\tFragment\n");
+    printf("-----------------------------------------------------\n");
+    for(int i = 0 ; i < pno && parray[i] != 0 ; i++)
+    {
+        printf("\n%d\t\t%d\t\t%d\t\t%d\t\t%d",i,psize[i],parray[i]+1,bsize[parray[i]],fragment[i]);
+    }
+}
+
+void WorstFit(int bsize[], int psize[], int bno, int pno)
+{
+    int all[20];
+    for(int i = 0 ; i < pno; i++)
+        all[i] = -1;
+    
+    for(int i = 0 ; i< pno ; i++)
+    {
+        int worstplace = -1;
+        for(int j = 0 ; j < bno ; j++)
+        {
+            if(bsize[j] >= psize[i])
+            {
+                if(worstplace == -1)
+                    worstplace = j;  
+                else if(bsize[worstplace] < bsize[j])
+                    worstplace = j;
+            }
+        }
+
+        if(worstplace != -1)
+        {
+            all[i] = worstplace;
+            bsize[worstplace] -= psize[i];
         }
     }
 
-    if (worst_partition != -1) {
-        // Allocate the process to the worst partition
-        memory[worst_partition].allocated = 1;
-        printf("Process allocated to partition %d using Worst Fit\n", worst_partition);
-    } else {
-        // If no suitable partition is found, create a new one
-        printf("No suitable partition found, creating a new one using Worst Fit\n");
-        // Create new partition
-        memory[num_partitions].size = process_size;
-        memory[num_partitions].allocated = 1;
-        printf("Process allocated to new partition %d using Worst Fit\n", num_partitions);
-    }
-}
-
-void displayMemoryStatus(struct MemoryPartition memory[], int num_partitions) {
-    printf("Memory Partition\tSize\tStatus\n");
-    printf("------------------------------------\n");
-    for (int i = 0; i < num_partitions; i++) {
-        printf("Partition %d\t\t%d\t%s\n", i, memory[i].size, memory[i].allocated ? "Allocated" : "Free");
-    }
-    printf("------------------------------------\n");
+        printf("\nProcess No\tProcess Size\tBlock No\tFree\n");
+        for(int i = 0 ; i < pno ; i++)
+        {
+            printf("%d\t\t%d\t\t",i+1,psize[i]);
+            if(all[i] != -1)
+            {
+                printf("%d\t\t",all[i]+1);
+            }
+            else
+                printf("Not Allocated\t");
+            printf("%d\n",bsize[i]);
+        }
 }
 
 int main()
 {
-    struct MemoryPartition memory[MAX_PARTITIONS];
-    int num_partitions;
-    printf("Enter the no paritions : ");
-    scanf("%d", &num_partitions);
-    printf("Enter the size of each partition:\n");
-    for(int i = 0 ; i < num_partitions ; i++)
+    int bsize[20], psize[20], bno, pno, flags[20], allocation[20];
+
+    printf("Enter the no of blocks : ");
+    scanf("%d", &bno);
+    printf("\nEnter the size of each block\n");
+    for (int i = 0; i < bno; i++)
+        scanf("%d", &bsize[i]);
+
+    printf("\nEnter the no of process : ");
+    scanf("%d", &pno);
+    printf("\nEnter the size of each process\n");
+    for (int i = 0; i < pno; i++)
+        scanf("%d", &psize[i]);
+
+    while (1)
     {
-        printf("Partition %d: ", i);
-        scanf("%d", &memory[i].size);
-        memory[i].allocated = 0;
-    }
-
-    int num_processes;
-    printf("Enter the number of processes: ");
-    scanf("%d", &num_processes);
-
-    for (int i = 0; i < num_processes; i++) {
-        int process_size, choice;
-        printf("Enter the memory requirement of process %d: ", i);
-        scanf("%d", &process_size);
-
-        // Select memory allocation strategy
-        printf("Choose memory allocation strategy:\n");
-        printf("1. First Fit\n");
-        printf("2. Best Fit\n");
-        printf("3. Worst Fit\n");
-        printf("Enter your choice: ");
+        int choice;
+        printf("\n\n1.First Fit\n2.Best Fit\n3. Worst Fit\n");
+        printf("\nEnter the choice : ");
         scanf("%d", &choice);
 
-        // Perform memory allocation based on user choice
-        switch (choice) {
-            case 1:
-                firstFit(memory, num_partitions, process_size);
-                break;
-            case 2:
-                bestFit(memory, num_partitions, process_size);
-                break;
-            case 3:
-                worstFit(memory, num_partitions, process_size);
-                break;
-            default:
-                printf("Invalid choice, process not allocated\n");
+        switch (choice)
+        {
+        case 1:
+            FirstFit(bsize, psize, bno, pno, flags, allocation);
+            break;
+        case 2:
+            BestFit(bsize,psize,bno,pno);
+            break;
+        case 3:
+            WorstFit(bsize,psize,bno,pno);
+            break;
+        default:
+            printf("\nInvalid Option\n");
         }
-
-        // Display memory status after each allocation
-        displayMemoryStatus(memory, num_partitions);
     }
 
     return 0;
