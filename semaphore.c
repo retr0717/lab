@@ -59,6 +59,7 @@ int main()
                 exit(0);
             default:
                 printf("\nInvalid Option\n");
+                break;
         }
 
         return 0;
