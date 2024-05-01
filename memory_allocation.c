@@ -3,7 +3,7 @@
 void FirstFit(int bsize[], int psize[], int bno, int pno, int flags[], int allocation[])
 {
     // initial setup
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < pno; i++)
     {
         flags[i] = 0;
         allocation[i] = -1;
@@ -14,13 +14,14 @@ void FirstFit(int bsize[], int psize[], int bno, int pno, int flags[], int alloc
     {
         for (int j = 0; j < bno; j++)
         {
-            if (bsize[j] >= psize[i])
+            if (bsize[j] >= psize[i] && flags[j] == 0)
             {
                 // allocate block psize[i] to block j.
                 allocation[i] = j;
 
-                // reduce the block size if there is any left.
-                bsize[j] -= psize[i];
+                // Mark block as allocated
+                flags[j] = 1;
+
                 break;
             }
         }
@@ -44,79 +45,77 @@ void FirstFit(int bsize[], int psize[], int bno, int pno, int flags[], int alloc
 
 void BestFit(int bsize[], int psize[], int bno, int pno)
 {
-    int lowest = 9999, temp;
-    int barray[20]= {0}, parray[20] = {0}, fragment[20];
+    int barray[20] = {0}, parray[20] = {0}, fragment[20];
 
     for (int i = 0; i < pno; i++)
     {
+        int lowest = 9999; // Initialize lowest inside the loop
+
         for (int j = 0; j < bno; j++)
         {
-            if(barray[j] != 1)
+            if (bsize[j] >= psize[i] && barray[j] == 0)
             {
-                temp = bsize[j] - psize[i];
-                if (temp >= 0)
+                int temp = bsize[j] - psize[i]; // Calculate fragment size
+
+                if (temp >= 0 && temp < lowest) // Check if block is suitable
                 {
-                    if(temp<lowest)
-                    {
-                        parray[i] = j;
-                        lowest = temp;
-                    }
+                    parray[i] = j;
+                    lowest = temp;
                 }
             }
         }
 
         fragment[i] = lowest;
         barray[parray[i]] = 1;
-        lowest=10000;
     }
 
     printf("\nProcess No\tProcess Size\tBlock size\tFragment\n");
     printf("-----------------------------------------------------\n");
-    for(int i = 0 ; i < pno && parray[i] != 0 ; i++)
+    for (int i = 0; i < pno && parray[i] != 0; i++)
     {
-        printf("\n%d\t\t%d\t\t%d\t\t%d\t\t%d",i,psize[i],parray[i]+1,bsize[parray[i]],fragment[i]);
+        printf("\n%d\t\t%d\t\t%d\t\t%d\t\t%d", i + 1, psize[i], parray[i] + 1, bsize[parray[i]], fragment[i]);
     }
 }
 
 void WorstFit(int bsize[], int psize[], int bno, int pno)
 {
     int all[20];
-    for(int i = 0 ; i < pno; i++)
+    for (int i = 0; i < pno; i++)
         all[i] = -1;
-    
-    for(int i = 0 ; i< pno ; i++)
+
+    for (int i = 0; i < pno; i++)
     {
         int worstplace = -1;
-        for(int j = 0 ; j < bno ; j++)
+        for (int j = 0; j < bno; j++)
         {
-            if(bsize[j] >= psize[i])
+            if (bsize[j] >= psize[i])
             {
-                if(worstplace == -1)
-                    worstplace = j;  
-                else if(bsize[worstplace] < bsize[j])
+                if (worstplace == -1)
+                    worstplace = j;
+                else if (bsize[worstplace] < bsize[j])
                     worstplace = j;
             }
         }
 
-        if(worstplace != -1)
+        if (worstplace != -1)
         {
             all[i] = worstplace;
             bsize[worstplace] -= psize[i];
         }
     }
 
-        printf("\nProcess No\tProcess Size\tBlock No\tFree\n");
-        for(int i = 0 ; i < pno ; i++)
+    printf("\nProcess No\tProcess Size\tBlock No\tFree\n");
+    for (int i = 0; i < pno; i++)
+    {
+        printf("%d\t\t%d\t\t", i + 1, psize[i]);
+        if (all[i] != -1)
         {
-            printf("%d\t\t%d\t\t",i+1,psize[i]);
-            if(all[i] != -1)
-            {
-                printf("%d\t\t",all[i]+1);
-            }
-            else
-                printf("Not Allocated\t");
-            printf("%d\n",bsize[i]);
+            printf("%d\t\t", all[i] + 1);
         }
+        else
+            printf("Not Allocated\t");
+        printf("%d\n", bsize[i]);
+    }
 }
 
 int main()
@@ -138,7 +137,7 @@ int main()
     while (1)
     {
         int choice;
-        printf("\n\n1.First Fit\n2.Best Fit\n3. Worst Fit\n");
+        printf("\n\n1.First Fit\n2.Best Fit\n3. Worst Fit\n4. Exit\n");
         printf("\nEnter the choice : ");
         scanf("%d", &choice);
 
@@ -148,11 +147,13 @@ int main()
             FirstFit(bsize, psize, bno, pno, flags, allocation);
             break;
         case 2:
-            BestFit(bsize,psize,bno,pno);
+            BestFit(bsize, psize, bno, pno);
             break;
         case 3:
-            WorstFit(bsize,psize,bno,pno);
+            WorstFit(bsize, psize, bno, pno);
             break;
+        case 4:
+            return 0;
         default:
             printf("\nInvalid Option\n");
         }
