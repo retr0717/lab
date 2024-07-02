@@ -178,16 +178,88 @@ int main() {
 }
 
 /*
-FIFO page replacement algorithm
-3 2 1 3 4 1 6 2 4 3 4 2 1 4 5 2 1 3 4
-pf -> 13
-hit -> 6
 
-LFU page replacement algorithm (optimal)
-pf -> 10
-hit -> 9
+Enter the number of frames : 3
+Enter the number of pages : 13
+Enter the reference string : 7 0 1 2 0 3 0 4 2 3 0 3 2
+1. FIFO
+2. LRU
+3. LFU
+4. Exit
+Enter your choice : 1
 
-LRU page replacement algorithm
-pf -> 14
-hit -> 5
+Reference string
+7  0  1  2  0  3  0  4  2  3  0  3  2
+7 - -
+7 0 -
+7 0 1
+2 0 1
+2 3 1
+2 3 0
+4 3 0
+4 2 0
+4 2 3
+0 2 3
+
+Hit : 3
+Fault : 10
+Hit ratio : 0.230769
+
+1. FIFO
+2. LRU
+3. LFU
+4. Exit
+Enter your choice : 2
+
+Reference string
+7  0  1  2  0  3  0  4  2  3  0  3  2
+  7	|	7 - -
+  0	|	7 0 -
+  1	|	7 0 1
+  2	|	2 0 1
+  0	|	   Hit
+
+  3	|	2 0 3
+  0	|	   Hit
+
+  4	|	4 0 3
+  2	|	4 0 2
+  3	|	4 3 2
+  0	|	0 3 2
+  3	|	   Hit
+
+  2	|	   Hit
+
+Total Page Faults = 9
+Hit : 4
+Hit ratio : 0.307692
+
+1. FIFO
+2. LRU
+3. LFU
+4. Exit
+Enter your choice : 3
+
+Reference string
+7  0  1  2  0  3  0  4  2  3  0  3  2
+- - 7
+- 0 7
+1 0 7
+2 0 7
+3 0 7
+4 0 7
+2 0 7
+3 0 7
+3 0 2
+
+Hit : 4
+Fault : 9
+Hit ratio : 0.307692
+
+1. FIFO
+2. LRU
+3. LFU
+4. Exit
+Enter your choice : 4
+
  */
