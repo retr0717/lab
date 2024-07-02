@@ -176,3 +176,18 @@ int main() {
   }
   return 0;
 }
+
+/*
+FIFO page replacement algorithm
+3 2 1 3 4 1 6 2 4 3 4 2 1 4 5 2 1 3 4
+pf -> 13
+hit -> 6
+
+LFU page replacement algorithm (optimal)
+pf -> 10
+hit -> 9
+
+LRU page replacement algorithm
+pf -> 14
+hit -> 5
+ */
