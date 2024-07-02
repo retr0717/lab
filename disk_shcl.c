@@ -28,11 +28,12 @@ int main() {
     for (int i = 1; i <= n; i++) {
       scanf("%d", &diskQueue[i]);
     }
-    printf("Enter the initial head position: ");
-    scanf("%d", &diskQueue[0]);
 
     switch (choice) {
     case 1:
+      printf("Enter the initial head position: ");
+      scanf("%d", &diskQueue[0]);
+
       fcfs(diskQueue, n + 1);
       break;
     case 2:

@@ -1,228 +1,221 @@
+#include <stdbool.h>
 #include <stdio.h>
 
-int n,m,i,j,k,alloc[20][20],max[20][20],avail[50],ind = 0;
+int n, m, i, j, k, alloc[20][20], max[20][20], avail[50];
 
-int SafeSequenceCheck(int need[][10], int request[], int n , int m, int pid)
-{
-    int ss[n];
-    int alloc_cp[n][m], avail_cp[50], ind_cp = 0, need_cp[n][m], finish[n];
-    //copy all matrix to new
-    for( i = 0 ; i < n ; i++)
-        for( j = 0 ; j < n ; j++)
-            alloc_cp[i][j] = alloc[i][j];
-    
-    for( i = 0 ; i < n ; i++)
-        for( j = 0 ; j < n ; j++)
-            need_cp[i][j] = need[i][j];
-    for( i = 0 ; i < m ; i++)
-            avail_cp[i] = avail[i];
-    
-    for(i = 0 ; i < n ; i++)
-    {
-            finish[i] = 0;
+void Change() {
+  int work[m];    // Work array to keep track of available resources
+  int safeseq[n]; // Safe sequence array
+  int finish[n];  // Finish array to keep track of finished processes
+  int ind = 0;    // Index for safe sequence
+  int need[n][m]; // Need matrix
+
+  // Initialize the finish array to 0
+  for (int i = 0; i < n; i++) {
+    finish[i] = 0;
+  }
+
+  // Initialize the work array with available resources
+  for (int i = 0; i < m; i++) {
+    work[i] = avail[i];
+  }
+
+  // Initialize the safeseq array to avoid garbage values
+  for (int i = 0; i < n; i++) {
+    safeseq[i] = -1; // -1 indicates uninitialized state
+  }
+
+  // Calculate the need matrix (maximum - allocation)
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      need[i][j] = max[i][j] - alloc[i][j];
     }
+  }
 
-    //change avail matrix
-    for(i = 0; i < m ; i++)
-    {
-        avail_cp[i] -= request[i];
-        alloc_cp[pid][i] += request[i];
-        need_cp[pid][i] += request[i];
+  // Print allocation matrix
+  printf("\nAllocation Matrix: \n");
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      printf("%d ", alloc[i][j]);
     }
-    
-    for( k = 0 ; k < n ; k++)
-    {
-        for(i = 0 ; i < n ; i++)
-        {
-            if(finish[i] == 0)
-            {
-                //check of the resource need against available(work).
-                int flag = 0;
-                for( j = 0 ; j < m ; j++)
-                {
-                    //if the need is > work ==> means we cant satisfy to indicate that we have flag set to 1.
-                    //if not flag = 0.
-                    //after an entire loop if the break statement is not executed means the need can be satisfied.
-                    if(need_cp[i][j] > avail_cp[j])
-                    {
-                        flag = 1;
-                        break;
-                    }
-                }
+    printf("\n");
+  }
 
-                //only reached here if the resource need <= available.
-                //means the availability satisfies current process need.
-                if(flag == 0)
-                {
-                    ss[ind_cp++] = i; 
-                    //add released reource instance to available(work).
-                    for( int y = 0 ; y < m ; y++)
-                        avail_cp[y] += alloc_cp[i][j];
-                    finish[i] = 1;
-                }
-            }
-        }
-   }
-
-   int len = sizeof(ss)/sizeof(ss[0]);
-
-   printf("\nlen : %d\n",len);
-   for(i = 0 ; i < n ; i++)
-        printf("%d  ",ss[i]);
-
-   if(len == n)
-   {
-    return 1;
-   }
-   else
-   {
-        return 0;
+  // Print max matrix
+  printf("\nMax Matrix: \n");
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      printf("%d ", max[i][j]);
     }
-}
+    printf("\n");
+  }
 
-int main()
-{
-   
-    
-    //read no of processes
-    printf("Enter the no of processes : ");
-    scanf("%d",&n);
-
-    //read no of resources
-    printf("\nEnter the no of resources : ");
-    scanf("%d",&m);
-
-    //read allocation matrix
-    printf("\nEnter the allocation matrix\n");
-    for(i = 0 ; i < n ; i++)
-        for(j = 0 ; j < m ; j++)
-            scanf("%d",&alloc[i][j]);
-    
-    //read max matrix
-    printf("\nEnter the max matrix\n");
-    for(i = 0 ; i < n ; i++)
-        for(j = 0 ; j < m ; j++)
-            scanf("%d",&max[i][j]);
-    
-    //read available matrix
-    printf("\nEnter the available matrix\n");
-    for(i = 0 ; i < m ; i++)
-        scanf("%d",&avail[i]);
-    
-    int finish[n], safeseq[n], work[m], need[n][m];
-
-    //copying the available resource info to work for temp calculation.
-    for(i = 0 ; i < m ; i++)
-    {
-        work[i] = avail[i];
+  // Print need matrix
+  printf("\nNeed Matrix: \n");
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      printf("%d ", need[i][j]);
     }
+    printf("\n");
+  }
 
-    //initially setting status of finished process to 0.
-    for(i = 0 ; i < n ; i++)
-    {
-            finish[i] = 0;
-    }
+  // Print available matrix
+  printf("\nAvailable Matrix: \n");
+  for (int i = 0; i < m; i++) {
+    printf("%d  ", work[i]);
+  }
 
-    //NEED matrix calculation.
-    for(i = 0; i < n ;i++)
-        for(j = 0 ; j < m ; j++)
-            need[i][j] = max[i][j] - alloc[i][j];
-
-    printf("\nNEED matrix\n");
-    for(i = 0 ; i < n; i++)
-    {
-        for(j = 0 ; j < m ; j++)
-            printf("%d  ",need[i][j]);
-        printf("\n");
-    } 
-    
-    for(i = 0 ; i < m ; i++)
-        work[i] = avail[i];
-    
-    for(i = 0 ; i < n ; i++)
-        finish[i] = 0;
-    
-    for( k = 0 ; k < n ; k++)
-    {
-        for(i = 0 ; i < n ; i++)
-        {
-            if(finish[i] == 0)
-            {
-                //check of the resource need against available(work).
-                int flag = 0;
-                for( j = 0 ; j < m ; j++)
-                {
-                    //if the need is > work ==> means we cant satisfy to indicate that we have flag set to 1.
-                    //if not flag = 0.
-                    //after an entire loop if the break statement is not executed means the need can be satisfied.
-                    if(need[i][j] > work[j])
-                    {
-                        flag = 1;
-                        break;
-                    }
-                }
-
-                //only reached here if the resource need <= available.
-                //means the availability satisfies current process need.
-                if(flag == 0)
-                {
-                    //add the process to safesequence.
-                    safeseq[ind++] = i;
-
-                    //add released reource instance to available(work).
-                    for( int y = 0 ; y < m ; y++)
-                        work[y] += alloc[i][j];
-                    finish[i] = 1;
-                }
-            }
-        }
-   }
-
-    printf("\nFollowing is the SAFE  sequence\n");
-    printf("< ");
-    for(i = 0 ; i < n ; i++)
-        printf("P-%d  ", safeseq[i]);
-    printf(">\n");
-
-    //resource allocation algorithm
-    //predicting if the deaklock occurs or not.
-    int pid;
-    printf("\nEnter the request process no : ");
-    scanf("%d",&pid);
-
-    //read the request.
-    int request[m];
-    for(int i = 0 ; i < m ; i++)
-    {
-        scanf("%d",&request[i]);
-    }
-
-    //check the request exceeds the need.
-    //if yes terminate.
-    //if not continue => means it is eligible for the safesequence check.
-    int flag_r = 0;
-    for(i = 0 ; i < m ; i++ )
-    {
-        if(request[i] > need[pid][i])
-        {
-            flag_r = 1;
+  // Banker's Algorithm to find the safe sequence
+  for (int k = 0; k < n; k++) {
+    for (int i = 0; i < n; i++) {
+      if (finish[i] == 0) {
+        // Check if the resource need can be satisfied with available resources
+        int flag = 0;
+        for (int j = 0; j < m; j++) {
+          if (need[i][j] > work[j]) {
+            flag = 1;
             break;
+          }
         }
+
+        // If the resource need <= available resources
+        if (flag == 0) {
+          // Add the process to the safe sequence
+          safeseq[ind++] = i;
+
+          // Add released resource instances to available (work)
+          for (int j = 0; j < m; j++) {
+            work[j] += alloc[i][j];
+          }
+
+          // Print the current state of the work array
+          printf("\n");
+          for (int j = 0; j < m; j++) {
+            printf("%d  ", work[j]);
+          }
+
+          finish[i] = 1;
+        }
+      }
     }
+  }
 
-    if(flag_r == 0)
-    {
-        //check for safesequence.
-        int result = SafeSequenceCheck(need, request, n, m , pid);
-
-        if(result == 1)
-        {
-            printf("permission grnated!");
-        }
-        else{
-            printf("permission not granted");
-        }
+  // Print the safe sequence
+  printf("\n\nSafe sequence: ");
+  for (int i = 0; i < n; i++) {
+    if (safeseq[i] != -1) {
+      printf("%d  ", safeseq[i]);
     }
-
-    return 0;
+  }
+  printf("\n");
 }
+
+int main() {
+
+  // Read number of processes
+  printf("Enter the number of processes: ");
+  scanf("%d", &n);
+
+  // Read number of resources
+  printf("\nEnter the number of resources: ");
+  scanf("%d", &m);
+
+  printf("\n n: %d | m: %d", n, m);
+
+  // Read allocation matrix
+  printf("\nEnter the allocation matrix:\n");
+  for (i = 0; i < n; i++)
+    for (j = 0; j < m; j++)
+      scanf("%d", &alloc[i][j]);
+
+  // Read max matrix
+  printf("\nEnter the max matrix:\n");
+  for (i = 0; i < n; i++)
+    for (j = 0; j < m; j++)
+      scanf("%d", &max[i][j]);
+
+  // Read available matrix
+  printf("\nEnter the available matrix:\n");
+  for (i = 0; i < m; i++)
+    scanf("%d", &avail[i]);
+
+  // Call the Change function to determine the safe sequence
+  Change();
+
+  // Read the request
+  int request[m];
+  printf("\nEnter the request for resources:\n");
+  for (int i = 0; i < m; i++) {
+    scanf("%d", &request[i]);
+  }
+
+  // Resource allocation algorithm to predict if deadlock occurs or not
+  int pid;
+  printf("\nEnter the requesting process number: ");
+  scanf("%d", &pid);
+
+  // Implementing resource request algorithm
+  int need[n][m];
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      need[i][j] = max[i][j] - alloc[i][j];
+    }
+  }
+
+  int canAllocate = 1;
+  for (int i = 0; i < m; i++) {
+    if (request[i] > need[pid][i] || request[i] > avail[i]) {
+      canAllocate = 0;
+      break;
+    }
+  }
+
+  if (canAllocate) {
+    for (int i = 0; i < m; i++) {
+      avail[i] -= request[i];
+      alloc[pid][i] += request[i];
+      need[pid][i] -= request[i];
+    }
+    printf("The request can be granted.\n");
+    Change();
+
+  } else {
+    printf("The request cannot be granted.\n");
+  }
+
+  return 0;
+}
+
+/*
+ Allocation Matrix: 
+2 0 0 1 
+4 2 2 1 
+2 1 0 3 
+1 3 1 2 
+1 4 3 2 
+
+Max Matrix: 
+4 2 1 2 
+5 2 5 2 
+2 3 1 6 
+1 4 2 4 
+3 6 6 5 
+
+Need Matrix: 
+2 2 1 1 
+1 0 3 1 
+0 2 1 3 
+0 1 1 2 
+2 2 3 3 
+
+Available Matrix: 
+2  2  2  1  
+4  2  2  2  
+5  5  3  4  
+6  9  6  6  
+10  11  8  7  
+12  12  8  10  
+
+Safe sequence: 0  3  4  1  2  
+
+ * */
